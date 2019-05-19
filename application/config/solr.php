@@ -18,7 +18,7 @@
 */
 $config['solr_host'] = "localhost";
 $config['solr_port'] = "8983";
-$config['solr_collection'] = "/solr/nada/";
+$config['solr_collection'] = "/solr/ihsn_catalog_v5/";
 
 
 
