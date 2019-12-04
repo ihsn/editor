@@ -664,7 +664,42 @@ $config['citations_storage_path']='datafiles/citations'; //don't add a trailing 
 $config['filestore_path']='files/public';
 
 
+/*
+|--------------------------------------------------------------------------
+| User data folder
+|--------------------------------------------------------------------------
+|
+| For storing user customizations and overrides.
+| 
+| Override language translations: 
+| For personalizing translations for your language, copy the language folder (e.g. application/language/english) and copy
+|  to [user_datapath/language/english] folder. 
+|
+|
+*/
+$config['userdata_path']='userdata'; //relative or absolute path
 
+
+/*
+|--------------------------------------------------------------------------
+| Catalog entries sort order
+|--------------------------------------------------------------------------
+|
+| Set default sort for catalog results
+|
+| catalog_default_sort_by       Sort by field
+| 
+|   valid values are:   
+|   'proddate','title','labl','nation','popularity','rank'
+|
+|
+| catalog_default_sort_order    Sort order
+|
+| valid values are: 'desc', 'asc'
+|
+*/
+$config['catalog_default_sort_by']='';
+$config['catalog_default_sort_order']='';
 
 /*
 |--------------------------------------------------------------------------
@@ -681,8 +716,53 @@ $config['filestore_path']='files/public';
 $config['search_provider']='solr';
 
 
+/**
+ * 
+ * Maintenance mode
+ * 
+ * @maintenance_mode 1=enable, 0=disable
+ * 
+*/
+$config['maintenance_mode']=0;
 
 
+
+/*
+|--------------------------------------------------------------------------
+| OTP verification for Admin users
+|--------------------------------------------------------------------------
+|
+| This enables One Time Password (OTP) verification for accessing site adminstration.
+|
+| OTP codes are sent via email, make sure the email system works.
+| 
+| expiry time - Codes are valid for 15 minutes only
+| 
+*/
+
+$config['otp_verification']=0;
+
+
+/*
+|--------------------------------------------------------------------------
+| Import access policy from DDI
+|--------------------------------------------------------------------------
+|
+| Enable importing Access Policy from DDI field study_desc/data_access/dataset_use/conditions
+|
+| Support access policy values are:
+|
+|   Open data access [open]
+|   Direct data access [direct]
+|   Public use data files [public]
+|   Licensed data files [licensed]
+|   Data not available [data_na]
+| 
+|   The part in the bracket is the code and must match.
+| 
+*/
+
+$config['enable_access_policy_import']=false;
 
 /*
 |--------------------------------------------------------------------------

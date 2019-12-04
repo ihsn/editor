@@ -19,6 +19,7 @@ class Dataset_microdata_model extends Dataset_model {
         $this->load->model('Data_file_model');
         $this->load->model('Variable_model');
         $this->load->model('Variable_group_model');
+        $this->load->model('Form_model');
     }
 
     function create_dataset($type,$options)
@@ -29,7 +30,7 @@ class Dataset_microdata_model extends Dataset_model {
         //get core fields for listing datasets in the catalog
         $core_fields=$this->get_core_fields($type,$options);
         $options=array_merge($options,$core_fields);
-		
+        
 		if(!isset($core_fields['idno']) || empty($core_fields['idno'])){
 			throw new exception("IDNO-NOT-SET");
 		}
@@ -51,15 +52,6 @@ class Dataset_microdata_model extends Dataset_model {
 		$variables=null;
         $variable_groups=null;
 
-        /*if(isset($options['doc_desc'])){
-            $options['metadata']['doc_desc']=$options['doc_desc'];
-            unset($options['doc_desc']);
-        }
-
-        if(isset($options['study_desc'])){
-            $options['metadata']['study_desc']=$options['study_desc'];
-            unset($options['study_desc']);
-        }*/
         $study_metadata_sections=array('doc_desc','study_desc','additional');
 
         foreach($study_metadata_sections as $section){		
@@ -89,7 +81,10 @@ class Dataset_microdata_model extends Dataset_model {
 		$this->db->trans_start();
 				
 		//insert record
-		$dataset_id=$this->insert($type,$options);
+        $dataset_id=$this->insert($type,$options);
+        
+        //set owner repo
+        $this->Dataset_model->set_dataset_owner_repo($dataset_id,$options['repositoryid']); 
 
 		//update years
 		$this->update_years($dataset_id,$core_fields['year_start'],$core_fields['year_end']);
@@ -192,10 +187,13 @@ class Dataset_microdata_model extends Dataset_model {
         }
 
 		//start transaction
-		$this->db->trans_start();
+		$this->db->trans_start(); 
 
 		//update
-		$this->update($sid,$type,$options);
+        $this->update($sid,$type,$options);
+        
+        //set owner repo
+        $this->Dataset_model->set_dataset_owner_repo($sid,$options['repositoryid']); 
 
 		//update years
 		$this->update_years($sid,$options['year_start'],$options['year_end']);
@@ -303,7 +301,11 @@ class Dataset_microdata_model extends Dataset_model {
 	{
 		$output=array();
 
-        $output['title']=$this->get_array_nested_value($options,'study_desc/title_statement/title');
+        $title=array();
+        $title[]=$this->get_array_nested_value($options,'study_desc/title_statement/title');
+        $title[]=$this->get_array_nested_value($options,'study_desc/title_statement/sub_title');
+        $title=array_filter($title);
+        $output['title']=implode(", ",$title);
         $output['idno']=$this->get_array_nested_value($options,'study_desc/title_statement/idno');
 
         $nations=(array)$this->get_array_nested_value($options,'study_desc/study_info/nation');
@@ -316,13 +318,54 @@ class Dataset_microdata_model extends Dataset_model {
         
         $auth_entity=$this->get_array_nested_value($options,'study_desc/authoring_entity');
         $output['authoring_entity']=$this->array_column_to_string($auth_entity,$column_name='name', $max_length=300);
-        
 
         $years=$this->get_data_collection_years($options);
         $output['year_start']=$years['start'];
-        $output['year_end']=$years['end'];			
-			
+        $output['year_end']=$years['end'];
+        
+        //set access policy from DDI if not set in $options
+        if($this->config->item("enable_access_policy_import"))
+        {
+            $access_conditions=$this->get_array_nested_value($options,'study_desc/data_access/dataset_use/conditions');
+            if(!isset($options['access_policy'])){
+
+                $access_policy=$this->get_access_policy_code($access_conditions);
+
+                if($access_policy){
+                    $options['access_policy']=$access_policy;
+                }
+            }
+        }
+
+        if(isset($options['access_policy'])){
+            $formid=$this->Form_model->get_formid_by_name($options['access_policy']);
+
+            if($formid){
+                $output['formid']=$formid;
+            }
+        }
+
 		return $output;
+    }
+
+
+
+    /**
+     * 
+     * Get access policy code from access conditions text
+     * 
+     *  e.g. Licensed data files [licensed]
+     * 
+     * Note: return the first match found in brackets
+     * 
+     */
+    function get_access_policy_code($access_conditions)
+    {
+		preg_match("/\[([^\]]*)\]/", $access_conditions, $matches);
+		if(!isset($matches[1])){
+            return false;
+        }
+        return $matches[1];
     }
     
 

@@ -202,7 +202,7 @@ class Citation_search_sqlsrv{
 							if (trim($keywords)==""){break;}
 							
 							$freetext_join=sprintf('freetexttable (citations,(ft_keywords),%s,%d) as KEY_TBL',$this->ci->db->escape($keywords),$limit);
-							$this->ci->db->join($freetext_join, 'citations.id = KEY_TBL.[KEY]','inner');
+							$this->ci->db->join($freetext_join, 'citations.id = KEY_TBL.KEY','inner');
 							$this->sort_on_rank=true;
 							
 							break;
@@ -243,11 +243,28 @@ class Citation_search_sqlsrv{
 							break;
 						
 						case 'url_status':
-                        if ($keywords!="")
-                        {
-                            $this->ci->db->where_in ('citations.url_status',$keywords);
-                        }
-                        break;	
+							if ($keywords!="")
+							{
+								$this->ci->db->where_in ('citations.url_status',$keywords);
+							}
+							break;	
+						
+						case 'ctype':
+							if (is_array($keywords)){                            
+								$this->ci->db->where_in ('citations.ctype',$keywords);
+							}
+							break; 
+						
+						case 'from':                        
+							if (strlen($keywords)==4 && is_numeric($keywords)){
+								$this->ci->db->where ('citations.pub_year >=',intval($keywords),false);
+							}
+							break;  
+                    	case 'to':                        
+							if (strlen($keywords)==4 && is_numeric($keywords)){
+								$this->ci->db->where ('citations.pub_year <=',intval($keywords),false);
+							}
+							break;    
 					}
 				}
 			}

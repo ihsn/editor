@@ -11,22 +11,32 @@ if(isset($survey['nation']) &&  trim($survey['nation']) !='' ){
 ?>
 
 <div class="page-body-full study-metadata-page">
+	<span 
+		id="dataset-metadata-info" 
+		data-repositoryid="<?php echo $survey['owner_repo']['repositoryid'];?>"
+		data-id="<?php echo $survey['id'];?>"
+		data-idno="<?php echo $survey['idno'];?>"
+	></span>
 
 <div class="container-fluid page-header">
 <div class="container">
 <?php if(intval($published)===0):?>
-	<div class="content-unpublished"><?php echo t('content_is_not_published');?></div>
+	<?php if($this->session->userdata('user_id')):?>
+		<div class="content-unpublished"><?php echo t('content_is_not_published');?></div>		
+	<?php else:?>	
+		<?php show_404();?>
+	<?php endif;?>
 <?php endif;?>
 
 <?php 
 	$sub_title=array();
 	if ($survey['nation']!=''){
-		$sub_title[]=$survey['nation'];
+		$sub_title[]='<span id="dataset-country">'.$survey['nation'].'</span>';
 	}
 	$dates=array_unique(array($survey['year_start'],$survey['year_end']));
 	$dates=implode(" - ", $dates);
 	if(!empty($dates)){
-		$sub_title[]=$dates;
+		$sub_title[]='<span id="dataset-year">'.$dates.'</span>';
 	}
 	$sub_title=implode(", ", $sub_title);
 ?>
@@ -55,8 +65,8 @@ if(isset($survey['nation']) &&  trim($survey['nation']) !='' ){
 	</div>
 	<?php endif;?>		
 	<div class="col-md-10">
-		<h1 class="mt-0 mb-1"><?php echo $survey_title;?></h1>
-		<h6 class="sub-title"><?php echo $sub_title;?>
+		<h1 class="mt-0 mb-1" id="dataset-title"><?php echo $survey_title;?></h1>
+		<h6 class="sub-title" id="dataset-sub-title"><?php echo $sub_title;?>
 
 		<?php if (isset($survey['repositories']) && is_array($survey['repositories']) && count($survey['repositories'])>0): ?>                    
 			<?php foreach($survey['repositories'] as $repository):?>
@@ -75,18 +85,37 @@ if(isset($survey['nation']) &&  trim($survey['nation']) !='' ){
 	
 
 		<div class="dataset-footer-bar mt-2">					
-            <span class="mr-3 link-col float-left">
-				<small><?php echo t('last_modified');?> 
-				<strong><?php echo date("F d, Y",$survey['changed']);?></strong>
-			</small>
-            </span>
-
+			
+			<span class="mr-3 link-col float-left">
+				<small>
+					<?php echo t('created_on');?> 
+					<strong><?php echo date("F d, Y",$survey['changed']);?></strong>
+				</small>
+			</span>
+			
+			<span class="mr-3 link-col float-left">
+				<small>
+					<?php echo t('last_modified');?> 
+					<strong><?php echo date("F d, Y",$survey['changed']);?></strong>
+				</small>
+			</span>
+			
             <?php if ((int)$survey['total_views']>0):?>
             <span class="mr-3 link-col float-left">
                 <small>
 				<i class="fa fa-eye" aria-hidden="true"></i> 
 				<?php echo t('page_views');?> 
 				<strong><?php echo $survey['total_views'];?></strong>
+			</small>
+            </span>
+			<?php endif;?>
+
+			<?php if ((int)$survey['total_downloads']>0):?>
+            <span class="mr-3 link-col float-left">
+                <small>
+				<i class="fa fa-eye" aria-hidden="true"></i> 
+				<?php echo t('download');?> 
+				<strong><?php echo $survey['total_downloads'];?></strong>
 			</small>
             </span>
 			<?php endif;?>
@@ -102,22 +131,24 @@ if(isset($survey['nation']) &&  trim($survey['nation']) !='' ){
 			<?php endif;?>
 
 			<?php if($survey['link_study']!=''): ?>
-				<span class="mr-3 link-col badge badge-light float-left">
+				<span class="mr-3 link-col  float-left">
+				<small>
 				<a  target="_blank" href="<?php echo html_escape($survey['link_study']);?>" title="<?php echo t('link_study_website_hover');?>">
 				<i class="fa fa-globe" aria-hidden="true"> </i> <?php echo t('link_study_website');?>
 				</a>
+				</small>
 				</span>
 			<?php endif; ?>
 		
-
 			<?php if($survey['link_indicator']!=''): ?>
-				<span class="mr-3 link-col badge badge-light float-left">
-				<a target="_blank"  href="<?php echo html_escape($survey['link_indicator']);?>" title="<?php echo t('link_indicators_hover');?>">
-				<i class="fa fa-database" aria-hidden="true"> </i> <?php echo t('link_indicators_hover');?>
-				</a>
+				<span class="mr-3 link-col float-left">
+					<small>
+						<a target="_blank"  href="<?php echo html_escape($survey['link_indicator']);?>" title="<?php echo t('link_indicators_hover');?>">
+							<i class="fa fa-database" aria-hidden="true"> </i> <?php echo t('link_indicators_hover');?>					
+						</a>
+					</small>
 				</span>
 			<?php endif; ?>
-
 
 			<span class="mr-3 link-col  float-left">
 				<small><i class="fa fa-download" aria-hidden="true"> </i> <?php echo t('metadata');?></small>
