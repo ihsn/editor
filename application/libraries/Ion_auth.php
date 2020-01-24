@@ -877,11 +877,34 @@ class Ion_auth
 	}
 	
 	
-	 function get_groups_by_user($id=FALSE)
-	 {
-	 	return $this->ci->ion_auth_model->get_groups_by_user($id);
-	 }
+	function get_groups_by_user($id=FALSE)
+	{
+		$groups= $this->ci->ion_auth_model->get_groups_by_user($id);
 
+		if($groups){
+			return $groups;
+		}
+
+		//if no user group set, set the default group to USER
+		$user_group=$this->ci->ion_auth->get_groupid_by_name('user');
+		
+		if(!$user_group){
+			return false;
+		}
+		
+		return array($user_group);			
+	}
+
+
+	/**
+	 * 
+	 * Return user group id by name
+	 * 
+	 */
+	function get_groupid_by_name($name)
+	{
+		return $this->ci->ion_auth_model->get_groupid_by_name($name);
+	}
 
 	/**
 	*
@@ -909,9 +932,39 @@ class Ion_auth
 		return $this->ci->ion_auth_model->set_api_key($user_id,$token);
 	}
 
-	function delete_api_key($api_key)
+	function delete_api_key($user_id,$api_key)
 	{
-		return $this->ci->ion_auth_model->delete_api_key($api_key);
+		return $this->ci->ion_auth_model->delete_api_key($user_id,$api_key);
 	}
+
+	function send_otp_code($user_id)
+	{
+		$otp_code=$this->ci->ion_auth_model->store_otp_code($user_id);
+
+		// Get user information
+		$user = $this->ci->ion_auth_model->get_user($user_id);
+
+		//user not found
+		if (!$user)
+		{
+			throw new Exception("User not found");
+		}
+
+		//email
+		$message='Your verification code is: <b>'.$otp_code.'</b>';
+		$this->ci->email->clear();
+		$this->ci->email->from($this->ci->config->item('website_webmaster_email'), $this->ci->config->item('website_webmaster_name'));
+		$this->ci->email->to($user->email);
+		$this->ci->email->subject($this->ci->config->item('website_title') . ' - '.t('verification_code'));
+		$this->ci->email->message($message);
+
+		if (!$this->ci->email->send())
+		{
+			throw new Exception("Email failed");
+		}
+		
+		return true;
+	}
+
 
 }

@@ -37,7 +37,8 @@ class Study extends MY_Controller {
 
 	//study metadata
 	function metadata($sid=NULL)
-	{$this->load->helper('array');
+	{
+		$this->load->helper('array');
 		$survey=$this->Dataset_model->get_row_detailed($sid);
 
 		if (!$survey){
@@ -100,9 +101,11 @@ class Study extends MY_Controller {
 			return $this->variable($sid,$file_id,$var_id);
 		}
 
-		$this->lang->load('ddi_fields');		
+		$this->lang->load('ddi_fields');
+		$this->load->model("Variable_group_model");
         $options['sid']=$sid;
 		$options['file_id']=$file_id;
+		$options['variable_groups_html']=$this->Variable_group_model->get_vgroup_tree_html($sid);
 		$options['file_list']=$this->Data_file_model->get_all_by_survey($sid);
         $options['file']=$this->Data_file_model->get_file_by_id($sid,$file_id);
         $options['variables']=$this->Variable_model->get_all_by_file($sid, $file_id);
@@ -549,7 +552,7 @@ class Study extends MY_Controller {
 		if ($allow_download){
 			$this->load->helper('download');
 			log_message('info','Downloading file <em>'.$resource_path.'</em>');
-			$this->db_logger->write_log('download',$survey_id,'resource='.$resource_id);
+			$this->db_logger->write_log('download',basename($resource_path),($resource_is_microdata ? 'microdata': 'resource'),$survey_id);
 			$this->db_logger->increment_study_download_count($survey_id);
 			force_download2($resource_path);
 		}
