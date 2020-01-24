@@ -231,7 +231,7 @@ $config['directory_trigger'] = 'd';
 | your log files will fill up very fast.
 |
 */
-$config['log_threshold'] = 0;
+$config['log_threshold'] = 1;
 
 /*
 |--------------------------------------------------------------------------
@@ -624,7 +624,7 @@ $config['site_user_register']='yes';
 |
 | allowed_resource_types	comma seperated list of file extensions that are allowed for uploading external resources
 */
-$config['allowed_resource_types']='jpg,gif,png,zip,doc,docx,pdf,sav,dta,txt,xls,xlsx,ppt,csv,rar';
+$config['allowed_resource_types']='jpg,gif,png,zip,doc,docx,pdf,sav,dta,txt,xls,xlsx,ppt,pptx,csv,rar,do,dat';
 
 
 /*
