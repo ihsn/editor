@@ -23,10 +23,22 @@ if (!isset($_SERVER['HTTP_HOST']))
 	$_SERVER['HTTP_HOST']='127.0.0.1';
 }
 
-//$config['base_url']	= "http://localhost/nada3/";
-$config['base_url'] = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") ? "https" : "http");
-$config['base_url'] .= "://".$_SERVER['HTTP_HOST'];
+
+#set base_url based on SSL availability
+$proto='http';
+
+#ihsn server proxy header for NGINX
+if(isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO']=='https'){
+  $proto='https';
+}
+
+if($proto=='http'){
+  $proto = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") ? "https" : "http");
+}
+
+$config['base_url'] = $proto."://".$_SERVER['HTTP_HOST'];
 $config['base_url'] .= str_replace(basename($_SERVER['SCRIPT_NAME']),"",$_SERVER['SCRIPT_NAME']);
+
 /*
 |--------------------------------------------------------------------------
 | Index File
